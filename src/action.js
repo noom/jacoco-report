@@ -79,7 +79,8 @@ async function action() {
           filesCoverage,
           minCoverageOverall,
           minCoverageChangedFiles,
-          title
+          title,
+          prNumber
         ),
         client
       );
@@ -90,8 +91,9 @@ async function action() {
 }
 
 function debug(obj) {
-  return JSON.stringify(obj, " ", 4);
+  return JSON.stringify(obj, " ", 2);
 }
+
 
 async function getJsonReports(xmlPaths) {
   return Promise.all(
@@ -114,7 +116,7 @@ async function getChangedFiles(base, head, client) {
   response.data.files.forEach((file) => {
     var changedFile = {
       filePath: file.filename,
-      url: file.blob_url,
+      url: file.blob_url
     };
     changedFiles.push(changedFile);
   });

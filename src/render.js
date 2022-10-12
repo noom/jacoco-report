@@ -3,15 +3,16 @@ function getPRComment(
   filesCoverage,
   minCoverageOverall,
   minCoverageChangedFiles,
-  title
+  title,
+  prNumber
 ) {
-  const fileTable = getFileTable(filesCoverage, minCoverageChangedFiles);
+  const fileTable = getFileTable(filesCoverage, minCoverageChangedFiles, prNumber);
   const overallTable = getOverallTable(overallCoverage, minCoverageOverall);
   const heading = getTitle(title);
   return heading + fileTable + `\n\n` + overallTable;
 }
 
-function getFileTable(filesCoverage, minCoverage) {
+function getFileTable(filesCoverage, minCoverage, prNumber) {
   const files = filesCoverage.files;
   if (files.length === 0) {
     return `> There is no coverage information present for the Files changed`;
@@ -21,7 +22,8 @@ function getFileTable(filesCoverage, minCoverage) {
   const tableStructure = `|:-|:-:|:-:|`;
   var table = tableHeader + `\n` + tableStructure;
   files.forEach((file) => {
-    renderFileRow(`[${file.name}](${file.url})`, file.percentage);
+    let previewUrl = formatPreviewUrl("noom", "community", prNumber, file.htmlReportPath);
+    renderFileRow(`[${file.name}](${previewUrl})`, file.percentage);
   });
   return table;
 
@@ -71,6 +73,10 @@ function getStatus(coverage, minCoverage) {
 
 function formatCoverage(coverage) {
   return `${parseFloat(coverage.toFixed(2))}%`;
+}
+
+function formatPreviewUrl(ownerName, repoName, prNumber, filePath) {
+    return `https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/${filePath}`;
 }
 
 module.exports = {
