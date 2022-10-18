@@ -22,14 +22,18 @@ inputs:
     description: "Update the coverage report comment instead of creating new ones. Requires title to works properly."
     required: false
     default: "false"
-  debug-mode:
-    description: "Run the action in debug mode and get debug logs printed in console"
-    required: false
-    default: "true" # Todo change this to false!
   show-pages-links:
     description: "Render links to gh-pages sites showing code coverage"
     required: false
-    default: "true" # Todo change this to false!
+    default: "false"
+  baseline-paths:
+    description: "Comma separated paths of the baseline generated jacoco xml files, used for coverage delta"
+    required: false
+    default: ""
+  debug-mode:
+    description: "Run the action in debug mode and get debug logs printed in console"
+    required: false
+    default: "false"
   #pages-url-template:
   #  description: "Base URL for code coverage hosting preview, file paths will be appended"
   #  required: false

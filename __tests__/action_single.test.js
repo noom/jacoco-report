@@ -13,12 +13,16 @@ describe("Single report", function () {
 
   function getInput(key) {
     switch (key) {
-      case "paths":
-        return "./__tests__/__fixtures__/report.xml";
-      case "min-coverage-overall":
+      case `paths`:
+        return `./__tests__/__fixtures__/report.xml`;
+      case `min-coverage-overall`:
         return 45;
       case `min-coverage-changed-files`:
         return 60;
+      case `baseline-paths`:
+        return ``;
+      case `show-pages-links`:
+        return `false`;
     }
   }
 

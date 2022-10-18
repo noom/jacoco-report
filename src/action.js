@@ -10,6 +10,9 @@ async function action() {
   try {
     const pathsString = core.getInput("paths");
     const reportPaths = pathsString.split(",");
+    const showPagesLinks = parseBooleans(core.getInput("show-pages-links"));
+    const baselinePathsString = core.getInput("baseline-paths");
+    const baselineReportPaths = baselinePathsString.split(",").filter(p => p.length > 0);
     const minCoverageOverall = parseFloat(
       core.getInput("min-coverage-overall")
     );
@@ -69,7 +72,30 @@ async function action() {
       parseFloat(filesCoverage.percentage.toFixed(2))
     );
 
+    var baselineData = null;
+    if (baselineReportPaths.length > 0) {
+      baselineData = {};
+      if (debugMode) core.info(`baselineReportPaths: ${baselineReportPaths}`);
+      const baselineReportsJsonAsync = getJsonReports(baselineReportPaths);
+      const baselineReportsJson = await reportsJsonAsync;
+      if (debugMode) core.info(`baselineReport value: ${debug(baselineReportsJson)}`);
+      const baselineReports = baselineReportsJson.map((report) => report["report"]);
+      const baselineOverallCoverage = process.getOverallCoverage(baselineReports);
+      if (debugMode) core.info(`baselineOverallCoverage: ${baselineOverallCoverage}`);
+      const baselineFilesCoverage = process.getFileCoverage(baselineReports, changedFiles);
+      if (debugMode) core.info(`baselineFilesCoverage: ${debug(baselineFilesCoverage)}`);
+      baselineData['filesCoverage'] = baselineFilesCoverage;
+      baselineData['overallCoverage'] = baselineFilesCoverage.project;
+    }
+
     if (prNumber != null) {
+      // TODO read these from context.
+      const previewContext = {
+        ownerName: "noom",
+        prNumber: prNumber,
+        repoName: "community",
+        showPagesLinks: showPagesLinks,
+      };
       await addComment(
         prNumber,
         updateComment,
@@ -79,8 +105,9 @@ async function action() {
           filesCoverage,
           minCoverageOverall,
           minCoverageChangedFiles,
+          previewContext,
           title,
-          prNumber
+          baselineData
         ),
         client
       );

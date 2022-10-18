@@ -12372,6 +12372,8 @@ async function action() {
   try {
     const pathsString = core.getInput("paths");
     const reportPaths = pathsString.split(",");
+    const baselinePathsString = core.getInput("baseline-paths");
+    const baselineReportPaths = baselinePathsString.split(",").filter(p => p.length > 0);
     const minCoverageOverall = parseFloat(
       core.getInput("min-coverage-overall")
     );
@@ -12431,7 +12433,30 @@ async function action() {
       parseFloat(filesCoverage.percentage.toFixed(2))
     );
 
+    var baselineData = null;
+    if (baselineReportPaths.length > 0) {
+      baselineData = {};
+      if (debugMode) core.info(`baselineReportPaths: ${baselineReportPaths}`);
+      const baselineReportsJsonAsync = getJsonReports(baselineReportPaths);
+      const baselineReportsJson = await reportsJsonAsync;
+      if (debugMode) core.info(`baselineReport value: ${debug(baselineReportsJson)}`);
+      const baselineReports = baselineReportsJson.map((report) => report["report"]);
+      const baselineOverallCoverage = process.getOverallCoverage(baselineReports);
+      if (debugMode) core.info(`baselineOverallCoverage: ${baselineOverallCoverage}`);
+      const baselineFilesCoverage = process.getFileCoverage(baselineReports, changedFiles);
+      if (debugMode) core.info(`baselineFilesCoverage: ${debug(baselineFilesCoverage)}`);
+      baselineData['filesCoverage'] = baselineFilesCoverage;
+      baselineData['overallCoverage'] = baselineFilesCoverage.project;
+    }
+
     if (prNumber != null) {
+      // TODO read these from context.
+      const previewContext = {
+        ownerName: "noom",
+        prNumber: prNumber,
+        repoName: "community",
+        showPagesLinks: true,
+      };
       await addComment(
         prNumber,
         updateComment,
@@ -12441,8 +12466,9 @@ async function action() {
           filesCoverage,
           minCoverageOverall,
           minCoverageChangedFiles,
+          previewContext,
           title,
-          prNumber
+          baselineData
         ),
         client
       );
@@ -12644,37 +12670,76 @@ function getPRComment(
   filesCoverage,
   minCoverageOverall,
   minCoverageChangedFiles,
+  previewContext,
   title,
-  prNumber
+  baselineData
+  // TODO separate baselineData.filesCoverage and baselineData.percentage
 ) {
-  const fileTable = getFileTable(filesCoverage, minCoverageChangedFiles, prNumber);
-  const overallTable = getOverallTable(overallCoverage, minCoverageOverall);
+  const fileTable = getFileTable(filesCoverage, minCoverageChangedFiles, baselineData, previewContext);
   const heading = getTitle(title);
+  if (baselineData == null) {
+    const overallTable = getOverallTable(overallCoverage, minCoverageOverall, baselineData);
+    return heading + fileTable + `\n\n` + overallTable;
+  } 
+  const overallTable = getOverallTableWithDelta(overallCoverage, minCoverageOverall, baselineData);
   return heading + fileTable + `\n\n` + overallTable;
 }
 
-function getFileTable(filesCoverage, minCoverage, prNumber) {
+function getFileTable(filesCoverage, minCoverage, baselineData, previewContext) {
   const files = filesCoverage.files;
   if (files.length === 0) {
     return `> There is no coverage information present for the Files changed`;
   }
 
-  const tableHeader = getHeader(filesCoverage.percentage);
-  const tableStructure = `|:-|:-:|:-:|`;
+  var tableHeader = getHeader(filesCoverage.percentage);
+  var tableStructure = `|:-|:-:|:-:|`;
+
+  if (baselineData != null) {
+    tableHeader = getHeaderWithDelta(filesCoverage.percentage, baselineData.filesCoverage.percentage);
+    tableStructure += `:-:|`;
+  }
+
   var table = tableHeader + `\n` + tableStructure;
   files.forEach((file) => {
-    let previewUrl = formatPreviewUrl("noom", "community", prNumber, file.htmlReportPath);
-    renderFileRow(`[${file.name}](${previewUrl})`, file.percentage);
+    let previewUrl = formatPreviewUrl(file, previewContext);
+    if (baselineData != null) {
+      const baselinePercentage = getBaselinePercentageFor(file, baselineData.filesCoverage.files);
+      renderFileRowWithDelta(`[${file.name}](${previewUrl})`, file.percentage, baselinePercentage);
+    } else {
+      renderFileRow(`[${file.name}](${previewUrl})`, file.percentage);
+    }
   });
   return table;
+
+  function getBaselinePercentageFor(file, baselineFiles) {
+    const baseline = baselineFiles.find(f => f.name == file.name);
+    return baseline.percentage;
+  }
 
   function renderFileRow(name, coverage) {
     addRow(getRow(name, coverage));
   }
 
+  function renderFileRowWithDelta(name, coverage, baselineCoverage) {
+    addRow(getRowWithDelta(name, coverage, baselineCoverage));
+  }
+
   function getHeader(coverage) {
     var status = getStatus(coverage, minCoverage);
     return `|File|Coverage [${formatCoverage(coverage)}]|${status}|`;
+  }
+
+  function getHeaderWithDelta(coverage, baselineCoverage) {
+    var status = getStatus(coverage, minCoverage);
+    const deltaCoverage = coverage - baselineCoverage;
+    return `|File|Coverage [${formatCoverage(coverage)}]|Delta [${formatCoverageDelta(deltaCoverage)}]|${status}|`;
+  }
+
+  function getRowWithDelta(name, coverage, baselineCoverage) {
+    //console.log(`coverage ${coverage}, baselineCoverage ${baselineCoverage}`)
+    var status = getStatus(coverage, minCoverage);
+    const deltaCoverage = coverage - baselineCoverage;
+    return `|${name}|${formatCoverage(coverage)}|${formatCoverageDelta(deltaCoverage)}|${status}|`;
   }
 
   function getRow(name, coverage) {
@@ -12687,12 +12752,24 @@ function getFileTable(filesCoverage, minCoverage, prNumber) {
   }
 }
 
-function getOverallTable(coverage, minCoverage) {
-  var status = getStatus(coverage, minCoverage);
+function getOverallTableWithDelta(coverage, minCoverage, baselineData) {
+  const status = getStatus(coverage, minCoverage);
+  const deltaCoverage = coverage - baselineData.overallCoverage;
+  const tableStructure = `|:-|:-:|:-:|:-:|`;
   const tableHeader = `|Total Project Coverage|${formatCoverage(
     coverage
+  )}|${formatCoverageDelta(
+    deltaCoverage
   )}|${status}|`;
-  const tableStructure = `|:-|:-:|:-:|`;
+  return tableHeader + `\n` + tableStructure;
+}
+
+function getOverallTable(coverage, minCoverage) {
+  var status = getStatus(coverage, minCoverage);
+  var tableHeader = `|Total Project Coverage|${formatCoverage(
+    coverage
+  )}|${status}|`;
+  var tableStructure = `|:-|:-:|:-:|`;
   return tableHeader + `\n` + tableStructure;
 }
 
@@ -12716,8 +12793,19 @@ function formatCoverage(coverage) {
   return `${parseFloat(coverage.toFixed(2))}%`;
 }
 
-function formatPreviewUrl(ownerName, repoName, prNumber, filePath) {
-    return `https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/${filePath}`;
+function formatCoverageDelta(coverageDelta, withEmoji=true) {
+  const emoji = coverageDelta > 0 ? `:smile:` : `:cry:`;
+  const postfix = withEmoji ? ` ${emoji}` : ``;
+  const prefix = coverageDelta > 0 ? `+` : ``;
+  return `${prefix}${parseFloat(coverageDelta.toFixed(2))}%${postfix}`;
+}
+
+function formatPreviewUrl(file, previewContext) {
+  const {ownerName, prNumber, repoName, showPagesLinks} = previewContext;
+  if (showPagesLinks) {
+    return `https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/${file.htmlReportPath}`;
+  }
+  return file.url
 }
 
 module.exports = {
