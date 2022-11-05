@@ -6,15 +6,14 @@ function getPRComment(
   previewContext,
   title,
   baselineData
-  // TODO separate baselineData.filesCoverage and baselineData.percentage
 ) {
   const fileTable = getFileTable(filesCoverage, minCoverageChangedFiles, baselineData, previewContext);
   const heading = getTitle(title);
   if (baselineData == null) {
-    const overallTable = getOverallTable(overallCoverage, minCoverageOverall, baselineData);
+    const overallTable = getOverallTable(overallCoverage, minCoverageOverall);
     return heading + fileTable + `\n\n` + overallTable;
   } 
-  const overallTable = getOverallTableWithDelta(overallCoverage, minCoverageOverall, baselineData);
+  const overallTable = getOverallTableWithDelta(overallCoverage, baselineData.overallCoverage);
   return heading + fileTable + `\n\n` + overallTable;
 }
 
@@ -45,8 +44,9 @@ function getFileTable(filesCoverage, minCoverage, baselineData, previewContext) 
   return table;
 
   function getBaselinePercentageFor(file, baselineFiles) {
+    // Returns percentage or undefined if file DNE
     const baseline = baselineFiles.find(f => f.name == file.name);
-    return baseline.percentage;
+    return baseline?.percentage;
   }
 
   function renderFileRow(name, coverage) {
@@ -63,16 +63,13 @@ function getFileTable(filesCoverage, minCoverage, baselineData, previewContext) 
   }
 
   function getHeaderWithDelta(coverage, baselineCoverage) {
-    var status = getStatus(coverage, minCoverage);
-    const deltaCoverage = coverage - baselineCoverage;
-    return `|File|Coverage [${formatCoverage(coverage)}]|Delta [${formatCoverageDelta(deltaCoverage)}]|${status}|`;
+    var status = getDeltaStatus(baselineCoverage, coverage);
+    return `|File|Coverage [${formatCoverage(coverage)}]|Delta [${formatCoverageDelta(baselineCoverage, coverage)}]|${status}|`;
   }
 
   function getRowWithDelta(name, coverage, baselineCoverage) {
-    //console.log(`coverage ${coverage}, baselineCoverage ${baselineCoverage}`)
-    var status = getStatus(coverage, minCoverage);
-    const deltaCoverage = coverage - baselineCoverage;
-    return `|${name}|${formatCoverage(coverage)}|${formatCoverageDelta(deltaCoverage)}|${status}|`;
+    var status = getDeltaStatus(baselineCoverage, coverage);
+    return `|${name}|${formatCoverage(coverage)}|${formatCoverageDelta(baselineCoverage, coverage)}|${status}|`;
   }
 
   function getRow(name, coverage) {
@@ -85,14 +82,13 @@ function getFileTable(filesCoverage, minCoverage, baselineData, previewContext) 
   }
 }
 
-function getOverallTableWithDelta(coverage, minCoverage, baselineData) {
-  const status = getStatus(coverage, minCoverage);
-  const deltaCoverage = coverage - baselineData.overallCoverage;
+function getOverallTableWithDelta(coverage, baselineCoverage) {
   const tableStructure = `|:-|:-:|:-:|:-:|`;
+  const status = getDeltaStatus(baselineCoverage, coverage);
   const tableHeader = `|Total Project Coverage|${formatCoverage(
     coverage
   )}|${formatCoverageDelta(
-    deltaCoverage
+    baselineCoverage, coverage
   )}|${status}|`;
   return tableHeader + `\n` + tableStructure;
 }
@@ -126,11 +122,25 @@ function formatCoverage(coverage) {
   return `${parseFloat(coverage.toFixed(2))}%`;
 }
 
-function formatCoverageDelta(coverageDelta, withEmoji=true) {
-  const emoji = coverageDelta > 0 ? `:smile:` : `:cry:`;
-  const postfix = withEmoji ? ` ${emoji}` : ``;
+function getDeltaStatus(previous, current) {
+  var coverageDelta = current - previous;
+  if (isNaN(coverageDelta)) {
+    coverageDelta = current;
+  }
+  const emoji = coverageDelta >= 0 ? `:green_apple:` : `:broken_heart:`;
+  return emoji;
+}
+
+function formatCoverageDelta(previous, current) {
+  var coverageDelta = current - previous;
+  if (isNaN(coverageDelta)) {
+    coverageDelta = current;
+  }
+  if (coverageDelta === undefined) {
+    return `---`;
+  }
   const prefix = coverageDelta > 0 ? `+` : ``;
-  return `${prefix}${parseFloat(coverageDelta.toFixed(2))}%${postfix}`;
+  return `${prefix}${parseFloat(coverageDelta.toFixed(2))}%`;
 }
 
 function formatPreviewUrl(file, previewContext) {

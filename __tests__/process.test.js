@@ -44,6 +44,7 @@ describe("get file coverage", function () {
           {
             filePath:
               "src/main/java/com/madrapps/jacoco/operation/StringOp.java",
+            htmlReportPath: "com.madrapps.jacoco.operation/StringOp.java",
             url: "https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/java/com/madrapps/jacoco/operation/StringOp.java",
             name: "StringOp.java",
             covered: 7,
@@ -76,8 +77,8 @@ describe("get file coverage", function () {
       expect(actual).toEqual({
         files: [
           {
-            filePath:
-              "src/main/java/com/madrapps/jacoco/operation/StringOp.java",
+            filePath: "src/main/java/com/madrapps/jacoco/operation/StringOp.java",
+            htmlReportPath: "com.madrapps.jacoco.operation/StringOp.java",
             url: "https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/java/com/madrapps/jacoco/operation/StringOp.java",
             name: "StringOp.java",
             covered: 7,
@@ -89,6 +90,7 @@ describe("get file coverage", function () {
             missed: 8,
             percentage: 46.67,
             filePath: "src/main/kotlin/com/madrapps/jacoco/Math.kt",
+            htmlReportPath: "com.madrapps.jacoco/Math.kt",
             name: "Math.kt",
             url: "https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/kotlin/com/madrapps/jacoco/Math.kt",
           },
@@ -119,6 +121,7 @@ describe("get file coverage", function () {
         files: [
           {
             filePath: "src/main/java/com/madrapps/playground/MainViewModel.kt",
+            htmlReportPath: "com.madrapps.playground/MainViewModel.kt",
             url: "https://github.com/thsaravana/jacoco-android-playground/src/main/java/com/madrapps/playground/MainViewModel.kt",
             name: "MainViewModel.kt",
             covered: 10,
@@ -154,11 +157,13 @@ describe("get file coverage", function () {
             missed: 8,
             percentage: 70.37,
             filePath: "src/main/java/com/madrapps/math/Math.kt",
+            htmlReportPath: "com.madrapps.math/Math.kt",
             name: "Math.kt",
             url: "https://github.com/thsaravana/jacoco-android-playground/src/main/java/com/madrapps/math/Math.kt",
           },
           {
             filePath: "src/main/java/com/madrapps/playground/MainViewModel.kt",
+            htmlReportPath: "com.madrapps.playground/MainViewModel.kt",
             url: "https://github.com/thsaravana/jacoco-android-playground/src/main/java/com/madrapps/playground/MainViewModel.kt",
             name: "MainViewModel.kt",
             covered: 10,

@@ -146,7 +146,7 @@ describe("get PR Comment", function () {
           covered: 7,
           missed: 0,
           percentage: 100,
-          htmlReportPath: "src/main/java/com/madrapps/jacoco/operation/StringOp.java",
+          htmlReportPath: "com.madrapps.jacoco.operation/StringOp.java",
         },
         {
           covered: 7,
@@ -155,7 +155,7 @@ describe("get PR Comment", function () {
           filePath: "src/main/kotlin/com/madrapps/jacoco/Math.kt",
           name: "Math.kt",
           url: "https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/kotlin/com/madrapps/jacoco/Math.kt",
-          htmlReportPath: "src/main/kotlin/com/madrapps/jacoco/Math.kt",
+          htmlReportPath: "com.madrapps.jacoco/Math.kt",
         },
       ],
       percentage: 63.64,
@@ -165,7 +165,7 @@ describe("get PR Comment", function () {
         {
           filePath: "src/main/java/com/madrapps/jacoco/operation/StringOp.java",
           url: "https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/java/com/madrapps/jacoco/operation/StringOp.java",
-          htmlReportPath: "src/main/java/com/madrapps/jacoco/operation/StringOp.java",
+          htmlReportPath: "com.madrapps.jacoco.operation/StringOp.java",
           name: "StringOp.java",
           covered: 7,
           missed: 0,
@@ -178,7 +178,7 @@ describe("get PR Comment", function () {
           filePath: "src/main/kotlin/com/madrapps/jacoco/Math.kt",
           name: "Math.kt",
           url: "https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/kotlin/com/madrapps/jacoco/Math.kt",
-          htmlReportPath: "src/main/java/com/madrapps/jacoco/operation/StringOp.java",
+          htmlReportPath: "com.madrapps.jacoco.operation/StringOp.java",
         },
       ],
       percentage: 60.64,
@@ -202,12 +202,12 @@ describe("get PR Comment", function () {
       const comment = render.getPRComment(49.23, files, 30, 60, previewContext, title, baselineData);
       expect(comment).toEqual(
         `### Titular Line
-|File|Coverage [63.64%]|Delta [+3% :smile:]|:green_apple:|
+|File|Coverage [63.64%]|Delta [+3%]|:green_apple:|
 |:-|:-:|:-:|:-:|
-|[StringOp.java](https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/src/main/java/com/madrapps/jacoco/operation/StringOp.java)|100%|+25% :smile:|:green_apple:|
-|[Math.kt](https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/src/main/kotlin/com/madrapps/jacoco/Math.kt)|46.67%|-3.34% :cry:|:x:|
+|[StringOp.java](https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/com.madrapps.jacoco.operation/StringOp.java)|100%|+25%|:green_apple:|
+|[Math.kt](https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/com.madrapps.jacoco/Math.kt)|46.67%|-3.34%|:broken_heart:|
 
-|Total Project Coverage|49.23%|+1.12% :smile:|:green_apple:|
+|Total Project Coverage|49.23%|+1.12%|:green_apple:|
 |:-|:-:|:-:|:-:|`
       );
     });
