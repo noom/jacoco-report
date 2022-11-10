@@ -3,11 +3,10 @@ function getPRComment(
   filesCoverage,
   minCoverageOverall,
   minCoverageChangedFiles,
-  previewContext,
   title,
   baselineData
 ) {
-  const fileTable = getFileTable(filesCoverage, minCoverageChangedFiles, baselineData, previewContext);
+  const fileTable = getFileTable(filesCoverage, minCoverageChangedFiles, baselineData);
   const heading = getTitle(title);
   const description = getDescription(baselineData);
   if (baselineData == null) {
@@ -18,7 +17,7 @@ function getPRComment(
   return heading + description + fileTable + `\n\n` + overallTable;
 }
 
-function getFileTable(filesCoverage, minCoverage, baselineData, previewContext) {
+function getFileTable(filesCoverage, minCoverage, baselineData) {
   const files = filesCoverage.files;
   if (files.length === 0) {
     return `> There is no coverage information present for the Files changed`;
@@ -34,12 +33,12 @@ function getFileTable(filesCoverage, minCoverage, baselineData, previewContext) 
 
   var table = tableHeader + `\n` + tableStructure;
   files.forEach((file) => {
-    let previewUrl = formatPreviewUrl(file, previewContext);
     if (baselineData != null) {
+      const previewUrl = formatPreviewUrl(file, baselineData.previewContext);
       const baselinePercentage = getBaselinePercentageFor(file, baselineData.filesCoverage.files);
       renderFileRowWithDelta(`[${file.name}](${previewUrl})`, file.percentage, baselinePercentage);
     } else {
-      renderFileRow(`[${file.name}](${previewUrl})`, file.percentage);
+      renderFileRow(`[${file.name}](${file.url})`, file.percentage);
     }
   });
   return table;
@@ -152,11 +151,8 @@ function formatCoverageDelta(previous, current) {
 }
 
 function formatPreviewUrl(file, previewContext) {
-  const {ownerName, prNumber, repoName, showPagesLinks} = previewContext;
-  if (showPagesLinks) {
-    return `https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/${file.htmlReportPath}`;
-  }
-  return file.url
+  const {ownerName, prNumber, repoName} = previewContext;
+  return `https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/${file.htmlReportPath}`;
 }
 
 module.exports = {

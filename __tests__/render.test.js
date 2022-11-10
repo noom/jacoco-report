@@ -26,7 +26,7 @@ describe("get PR Comment", function () {
     });
 
     it("with title", function () {
-      const comment = render.getPRComment(49.23, files, 70, 50, {}, "Coverage");
+      const comment = render.getPRComment(49.23, files, 70, 50, "Coverage", null);
       expect(comment).toEqual(
         `### Coverage
 > There is no coverage information present for the Files changed
@@ -59,18 +59,10 @@ describe("get PR Comment", function () {
       ],
       percentage: 63.64,
     };
-    const ownerName = "thsaravana";
-    const repoName = "jacoco-playground"
-    const prNumber = 1170;
-    const previewContext = {
-      ownerName: ownerName,
-      prNumber: prNumber,
-      repoName: repoName,
-      showPagesLinks: false,
-    };
+    const baselineData = null;
 
     it("coverage greater than min coverage for overall project", function () {
-      const comment = render.getPRComment(49.23, files, 30, 60, previewContext);
+      const comment = render.getPRComment(49.23, files, 30, 60, baselineData);
       expect(comment).toEqual(
         `|File|Coverage [63.64%]|:green_apple:|
 |:-|:-:|:-:|
@@ -83,7 +75,7 @@ describe("get PR Comment", function () {
     });
 
     it("coverage lesser than min coverage for overall project", function () {
-      const comment = render.getPRComment(49.23, files, 50, 64, previewContext);
+      const comment = render.getPRComment(49.23, files, 50, 64, baselineData);
       expect(comment).toEqual(
         `|File|Coverage [63.64%]|:x:|
 |:-|:-:|:-:|
@@ -96,7 +88,7 @@ describe("get PR Comment", function () {
     });
 
     it("coverage greater than min coverage for changed files", function () {
-      const comment = render.getPRComment(49.23, files, 30, 80, previewContext);
+      const comment = render.getPRComment(49.23, files, 30, 80, baselineData);
       expect(comment).toEqual(
         `|File|Coverage [63.64%]|:x:|
 |:-|:-:|:-:|
@@ -109,7 +101,7 @@ describe("get PR Comment", function () {
     });
 
     it("coverage lesser than min coverage for overall project", function () {
-      const comment = render.getPRComment(49.23, files, 50, 20, previewContext);
+      const comment = render.getPRComment(49.23, files, 50, 20, baselineData);
       expect(comment).toEqual(
         `|File|Coverage [63.64%]|:green_apple:|
 |:-|:-:|:-:|
@@ -122,7 +114,7 @@ describe("get PR Comment", function () {
     });
 
     it("with title", function () {
-      const comment = render.getPRComment(49.23, files, 50, 20, previewContext, "Coverage");
+      const comment = render.getPRComment(49.23, files, 50, 20, "Coverage", baselineData);
       expect(comment).toEqual(
         `### Coverage
 |File|Coverage [63.64%]|:green_apple:|
@@ -183,23 +175,23 @@ describe("get PR Comment", function () {
       ],
       percentage: 60.64,
     };
-    const baselineData = {
-      filesCoverage: baselineFiles,
-      overallCoverage: 48.11,
-    }; 
     const ownerName = "thsaravana";
     const repoName = "jacoco-playground"
     const prNumber = 1170;
-    const previewContext = {
+    const baselineData = {
+      filesCoverage: baselineFiles,
+      overallCoverage: 48.11,
+      previewContext: {
       ownerName: ownerName,
       prNumber: prNumber,
       repoName: repoName,
       showPagesLinks: true,
+      },
     };
     const title = "Titular Line";
 
     it("coverage greater than min coverage for overall project", function () {
-      const comment = render.getPRComment(49.23, files, 30, 60, previewContext, title, baselineData);
+      const comment = render.getPRComment(49.23, files, 30, 60, title, baselineData);
       expect(comment).toEqual(
         `### Titular Line
 Coverage change is reported relative to the default branch.

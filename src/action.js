@@ -62,18 +62,18 @@ async function action() {
     );
 
     var baselineData = null;
+
+    if (prNumber != null) {
     if (baselineReportPaths.length > 0) {
       baselineData = await getCoverageInfo(baselineReportPaths, base, head, client, debugMode);
       baselineData.overallCoverage = baselineData.overallCoverage.project;
-    }
-
-    if (prNumber != null) {
-      const previewContext = {
+      baselineData.previewContext = {
         prNumber: prNumber,
         ownerName: github.context.repo.owner,
         repoName: github.context.repo.repo,
         showPagesLinks: showPagesLinks,
       };
+    }
       await addComment(
         prNumber,
         updateComment,
@@ -83,7 +83,6 @@ async function action() {
           filesCoverage,
           minCoverageOverall,
           minCoverageChangedFiles,
-          previewContext,
           title,
           baselineData
         ),
