@@ -12676,12 +12676,13 @@ function getPRComment(
 ) {
   const fileTable = getFileTable(filesCoverage, minCoverageChangedFiles, baselineData, previewContext);
   const heading = getTitle(title);
+  const description = getDescription(baselineData);
   if (baselineData == null) {
     const overallTable = getOverallTable(overallCoverage, minCoverageOverall);
-    return heading + fileTable + `\n\n` + overallTable;
+    return heading + description + fileTable + `\n\n` + overallTable;
   } 
   const overallTable = getOverallTableWithDelta(overallCoverage, baselineData.overallCoverage);
-  return heading + fileTable + `\n\n` + overallTable;
+  return heading + description + fileTable + `\n\n` + overallTable;
 }
 
 function getFileTable(filesCoverage, minCoverage, baselineData, previewContext) {
@@ -12731,7 +12732,7 @@ function getFileTable(filesCoverage, minCoverage, baselineData, previewContext) 
 
   function getHeaderWithDelta(coverage, baselineCoverage) {
     var status = getDeltaStatus(baselineCoverage, coverage);
-    return `|File|Coverage [${formatCoverage(coverage)}]|Delta [${formatCoverageDelta(baselineCoverage, coverage)}]|${status}|`;
+    return `|File|Coverage [${formatCoverage(coverage)}]|Change [${formatCoverageDelta(baselineCoverage, coverage)}]|${status}|`;
   }
 
   function getRowWithDelta(name, coverage, baselineCoverage) {
@@ -12767,6 +12768,13 @@ function getOverallTable(coverage, minCoverage) {
   )}|${status}|`;
   var tableStructure = `|:-|:-:|:-:|`;
   return tableHeader + `\n` + tableStructure;
+}
+
+function getDescription(baselineData) {
+  if (baselineData == null) {
+    return "";
+  }
+  return `Coverage change is reported relative to the default branch.\n`;
 }
 
 function getTitle(title) {

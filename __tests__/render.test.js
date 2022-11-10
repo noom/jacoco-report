@@ -202,7 +202,8 @@ describe("get PR Comment", function () {
       const comment = render.getPRComment(49.23, files, 30, 60, previewContext, title, baselineData);
       expect(comment).toEqual(
         `### Titular Line
-|File|Coverage [63.64%]|Delta [+3%]|:green_apple:|
+Coverage change is reported relative to the default branch.
+|File|Coverage [63.64%]|Change [+3%]|:green_apple:|
 |:-|:-:|:-:|:-:|
 |[StringOp.java](https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/com.madrapps.jacoco.operation/StringOp.java)|100%|+25%|:green_apple:|
 |[Math.kt](https://${ownerName}.github.io/${repoName}/pr-preview/pr-${prNumber}/com.madrapps.jacoco/Math.kt)|46.67%|-3.34%|:broken_heart:|

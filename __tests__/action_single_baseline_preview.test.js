@@ -109,7 +109,8 @@ describe("Single report", function () {
       await action.action();
 
       expect(createComment.mock.calls[0][0].body)
-        .toEqual(`|File|Coverage [14.99%]|Delta [-19.86%]|:broken_heart:|
+        .toEqual(`Coverage change is reported relative to the default branch.
+|File|Coverage [14.99%]|Change [-19.86%]|:broken_heart:|
 |:-|:-:|:-:|:-:|
 |[TestNonsenseService.kt](https://thsaravana.github.io/jacoco-playground/pr-preview/pr-45/com.noom.amityOnboarding.service/TestNonsenseService.kt)|78.79%|+78.79%|:green_apple:|
 |[OnboardingService.kt](https://thsaravana.github.io/jacoco-playground/pr-preview/pr-45/com.noom.amityOnboarding.service/OnboardingService.kt)|16.48%|-33.01%|:broken_heart:|
