@@ -1,6 +1,6 @@
 # jacoco-report
 
-[![Tests](https://github.com/Madrapps/jacoco-report/actions/workflows/check.yml/badge.svg)](https://github.com/Madrapps/jacoco-report/actions/workflows/check.yml)
+[![Tests](https://github.com/noom/jacoco-report/actions/workflows/check.yml/badge.svg)](https://github.com/noom/jacoco-report/actions/workflows/check.yml)
 
 A Github action that publishes the JaCoCo report as a comment in the Pull Request with customizable pass percentage for modified files and for the entire project.
 
@@ -64,6 +64,33 @@ jobs:
 For a working project refer to [jacoco-playgound](https://github.com/thsaravana/jacoco-playground). Check out the PR's in
 the project to get an idea on how the report is shown on a pull request comment.
 For multi module gradle project, refer [jacoco-android-playground](https://github.com/thsaravana/jacoco-android-playground)
+
+## Development
+
+### Local
+You can change the `main` entry in the `runs` heading in `action.yml` to read as follows:
+```
+runs:
+  using: "node16"
+  main: "index.js"
+```
+Normally this should read `main: "dist/index.js"`, see below.
+
+Test via
+```
+# npm install if this is a fresh init
+npm test
+```
+
+### Distribution
+Github recommends
+[running actions via built packages under `dist/`](https://docs.github.com/en/actions/creating-actions/creating-a-javascript-action#commit-tag-and-push-your-action-to-github),
+to iterate you'll need to install `ncc` and build with that. On MacOS this is
+
+```
+brew install ncc
+ncc build src/index.js -o dist
+```
 
 ## License
 

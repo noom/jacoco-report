@@ -34,6 +34,8 @@ describe("Multiple reports", function () {
         return 45;
       case `min-coverage-changed-files`:
         return 60;
+      case `baseline-paths`:
+        return ``;
     }
   });
   github.getOctokit = jest.fn(() => {

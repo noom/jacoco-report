@@ -13,10 +13,10 @@ describe("Single report", function () {
 
   function getInput(key) {
     const map = new Map();
-    map.set("paths", "./__tests__/__fixtures__/report.xml");
+    map.set("paths", "./__tests__/__fixtures__/jacocoTestReport_delta.xml");
     map.set("min-coverage-overall", 45);
     map.set("min-coverage-changed-files", 60);
-    map.set("baseline-paths", "");
+    map.set("baseline-paths", "./__tests__/__fixtures__/jacocoTestReport_master.xml");
     return map.get(key);
   }
 
@@ -50,15 +50,29 @@ describe("Single report", function () {
     data: {
       files: [
         {
-          filename: "src/main/kotlin/com/madrapps/jacoco/Math.kt",
-          blob_url:
-            "https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/kotlin/com/madrapps/jacoco/Math.kt",
+          filename: "src/main/java/com/noom/amityOnboarding/service/OnboardingService.kt",
+          blob_url: "https://github.com/noom/community/src/main/java/com/noom/amityOnboarding/service/OnboardingService.kt",
         },
         {
-          filename: "src/main/java/com/madrapps/jacoco/operation/StringOp.java",
-          blob_url:
-            "https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/java/com/madrapps/jacoco/operation/StringOp.java",
+          filename: "src/main/java/com/noom/amityOnboarding/service/TestNonsenseService.kt",
+          blob_url: "https://github.com/noom/community/src/main/java/com/noom/amityOnboarding/service/TestNonsenseService.kt",
         },
+        {
+          filename: "src/main/java/com/noom/community/configuration/DatabaseConfiguration.java",
+          blob_url: "https://github.com/noom/community/src/main/java/com/noom/community/configuration/DatabaseConfiguration.java",
+        },
+        {
+          filename: "src/main/java/com/noom/web/TestController.kt",
+          blob_url: "https://github.com/noom/community/src/main/java/com/noom/web/TestController.kt",
+        },
+        {
+          filename: "src/test/java/com/noom/amityOnboarding/service/OnboardingServiceTest.kt",
+          blob_url: "https://github.com/noom/community/src/test/java/com/noom/amityOnboarding/service/OnboardingServiceTest.kt",
+        },
+        {
+          filename: "src/test/java/com/noom/amityOnboarding/service/TestNonsenseServiceTest.kt",
+          blob_url: "https://github.com/noom/community/src/test/java/com/noom/amityOnboarding/service/TestNonsenseServiceTest.kt",
+        }
       ],
     },
   };
@@ -77,8 +91,10 @@ describe("Single report", function () {
           },
         },
       },
-      repo: "jacoco-playground",
-      owner: "madrapps",
+      repo: {
+        repo: "jacoco-playground",
+        owner: "thsaravana",
+      },
     };
 
     it("publish proper comment", async () => {
@@ -87,13 +103,16 @@ describe("Single report", function () {
       await action.action();
 
       expect(createComment.mock.calls[0][0].body)
-        .toEqual(`|File|Coverage [63.64%]|:green_apple:|
-|:-|:-:|:-:|
-|[StringOp.java](https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/java/com/madrapps/jacoco/operation/StringOp.java)|100%|:green_apple:|
-|[Math.kt](https://github.com/thsaravana/jacoco-playground/blob/77b14eb61efcd211ee93a7d8bac80cf292d207cc/src/main/kotlin/com/madrapps/jacoco/Math.kt)|46.67%|:x:|
+        .toEqual(`Coverage change is reported relative to the default branch.
+|File|Coverage [14.99%]|Change [-19.86%]|:broken_heart:|
+|:-|:-:|:-:|:-:|
+|[TestNonsenseService.kt](https://thsaravana.github.io/jacoco-playground/pr-preview/pr-45/com.noom.amityOnboarding.service/TestNonsenseService.kt)|78.79%|+78.79%|:green_apple:|
+|[OnboardingService.kt](https://thsaravana.github.io/jacoco-playground/pr-preview/pr-45/com.noom.amityOnboarding.service/OnboardingService.kt)|16.48%|-33.01%|:broken_heart:|
+|[DatabaseConfiguration.java](https://thsaravana.github.io/jacoco-playground/pr-preview/pr-45/com.noom.community.configuration/DatabaseConfiguration.java)|0%|0%|:green_apple:|
+|[TestController.kt](https://thsaravana.github.io/jacoco-playground/pr-preview/pr-45/com.noom.web/TestController.kt)|0%|0%|:green_apple:|
 
-|Total Project Coverage|49.02%|:green_apple:|
-|:-|:-:|:-:|`);
+|Total Project Coverage|13.35%|-3.07%|:broken_heart:|
+|:-|:-:|:-:|:-:|`);
     });
 
     it("updates a previous comment", async () => {
@@ -131,7 +150,7 @@ describe("Single report", function () {
       await action.action();
 
       const out = output.mock.calls[0];
-      expect(out).toEqual(["coverage-overall", 49.02]);
+      expect(out).toEqual(["coverage-overall", 13.35]);
     });
 
     it("set changed files coverage output", async () => {
@@ -141,7 +160,7 @@ describe("Single report", function () {
       await action.action();
 
       const out = output.mock.calls[1];
-      expect(out).toEqual(["coverage-changed-files", 63.64]);
+      expect(out).toEqual(["coverage-changed-files", 14.99]);
     });
   });
 
@@ -160,7 +179,7 @@ describe("Single report", function () {
         },
       },
       repo: "jacoco-playground",
-      owner: "madrapps",
+      owner: "thsaravana",
     };
 
     it("set overall coverage output", async () => {
@@ -170,7 +189,7 @@ describe("Single report", function () {
       await action.action();
 
       const out = output.mock.calls[0];
-      expect(out).toEqual(["coverage-overall", 49.02]);
+      expect(out).toEqual(["coverage-overall", 13.35]);
     });
   })
 
@@ -182,7 +201,7 @@ describe("Single report", function () {
         after: "aahsdflais76dfa78wrglghjkaghkj",
       },
       repo: "jacoco-playground",
-      owner: "madrapps",
+      owner: "thsaravana",
     };
 
     it("set overall coverage output", async () => {
@@ -192,7 +211,7 @@ describe("Single report", function () {
       await action.action();
 
       const out = output.mock.calls[0];
-      expect(out).toEqual(["coverage-overall", 49.02]);
+      expect(out).toEqual(["coverage-overall", 13.35]);
     });
 
     it("set changed files coverage output", async () => {
@@ -202,7 +221,7 @@ describe("Single report", function () {
       await action.action();
 
       const out = output.mock.calls[1];
-      expect(out).toEqual(["coverage-changed-files", 63.64]);
+      expect(out).toEqual(["coverage-changed-files", 14.99]);
     });
   });
 

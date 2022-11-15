@@ -10,6 +10,8 @@ async function action() {
   try {
     const pathsString = core.getInput("paths");
     const reportPaths = pathsString.split(",");
+    const baselinePathsString = core.getInput("baseline-paths");
+    const baselineReportPaths = baselinePathsString.split(",").filter(p => p.length > 0);
     const minCoverageOverall = parseFloat(
       core.getInput("min-coverage-overall")
     );
@@ -46,30 +48,30 @@ async function action() {
 
     const client = github.getOctokit(core.getInput("token"));
 
-    if (debugMode) core.info(`reportPaths: ${reportPaths}`);
-    const reportsJsonAsync = getJsonReports(reportPaths);
-    const changedFiles = await getChangedFiles(base, head, client);
-    if (debugMode) core.info(`changedFiles: ${debug(changedFiles)}`);
-
-    const reportsJson = await reportsJsonAsync;
-    if (debugMode) core.info(`report value: ${debug(reportsJson)}`);
-    const reports = reportsJson.map((report) => report["report"]);
-
-    const overallCoverage = process.getOverallCoverage(reports);
-    if (debugMode) core.info(`overallCoverage: ${overallCoverage}`);
+    const coverageInfo = await getCoverageInfo(reportPaths, base, head, client, debugMode);
+    const overallCoverage = coverageInfo.overallCoverage;
+    const filesCoverage = coverageInfo.filesCoverage;
     core.setOutput(
       "coverage-overall",
       parseFloat(overallCoverage.project.toFixed(2))
     );
-
-    const filesCoverage = process.getFileCoverage(reports, changedFiles);
-    if (debugMode) core.info(`filesCoverage: ${debug(filesCoverage)}`);
     core.setOutput(
       "coverage-changed-files",
       parseFloat(filesCoverage.percentage.toFixed(2))
     );
 
+    var baselineData = null;
+
     if (prNumber != null) {
+      if (baselineReportPaths.length > 0) {
+        baselineData = await getCoverageInfo(baselineReportPaths, base, head, client, debugMode);
+        baselineData.overallCoverage = baselineData.overallCoverage.project;
+        baselineData.previewContext = {
+          prNumber: prNumber,
+          ownerName: github.context.repo.owner,
+          repoName: github.context.repo.repo,
+        };
+      }
       await addComment(
         prNumber,
         updateComment,
@@ -79,7 +81,8 @@ async function action() {
           filesCoverage,
           minCoverageOverall,
           minCoverageChangedFiles,
-          title
+          title,
+          baselineData
         ),
         client
       );
@@ -90,8 +93,30 @@ async function action() {
 }
 
 function debug(obj) {
-  return JSON.stringify(obj, " ", 4);
+  return JSON.stringify(obj, " ", 2);
 }
+
+async function getCoverageInfo(reportPaths, base, head, client, debugMode) {
+  if (debugMode) core.info(`reportPaths: ${reportPaths}`);
+  const reportsJsonAsync = getJsonReports(reportPaths);
+  const changedFiles = await getChangedFiles(base, head, client);
+  if (debugMode) core.info(`changedFiles: ${debug(changedFiles)}`);
+
+  const reportsJson = await reportsJsonAsync;
+  if (debugMode) core.info(`report value: ${debug(reportsJson)}`);
+  const reports = reportsJson.map((report) => report["report"]);
+
+  const overallCoverage = process.getOverallCoverage(reports);
+  if (debugMode) core.info(`overallCoverage: ${overallCoverage}`);
+
+  const filesCoverage = process.getFileCoverage(reports, changedFiles);
+  if (debugMode) core.info(`filesCoverage: ${debug(filesCoverage)}`);
+  return {
+    "filesCoverage": filesCoverage,
+    "overallCoverage": overallCoverage
+  };
+}
+
 
 async function getJsonReports(xmlPaths) {
   return Promise.all(

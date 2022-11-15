@@ -15,14 +15,15 @@ function getFileCoverageFromPackages(packages, files) {
         return f.filePath.endsWith(`${packageName}/${sourceFileName}`);
       });
       if (file != null) {
-        const fileName = sourceFile["$"].name;
+        const htmlFormattedFileName = `${packageName.replaceAll('/','.')}/${sourceFileName}` 
         const counters = sourceFile["counter"];
         if (counters != null && counters.length != 0) {
           const coverage = getDetailedCoverage(counters, "INSTRUCTION");
-          file["name"] = fileName;
+          file["name"] = sourceFileName;
           file["missed"] = coverage.missed;
           file["covered"] = coverage.covered;
           file["percentage"] = coverage.percentage;
+          file["htmlReportPath"] = htmlFormattedFileName;
           resultFiles.push(file);
         }
       }
