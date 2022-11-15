@@ -12,18 +12,12 @@ describe("Single report", function () {
   let output;
 
   function getInput(key) {
-    switch (key) {
-      case `paths`:
-        return `./__tests__/__fixtures__/report.xml`;
-      case `min-coverage-overall`:
-        return 45;
-      case `min-coverage-changed-files`:
-        return 60;
-      case `baseline-paths`:
-        return ``;
-      case `show-pages-links`:
-        return `false`;
-    }
+    const map = new Map();
+    map.set("paths", "./__tests__/__fixtures__/report.xml");
+    map.set("min-coverage-overall", 45);
+    map.set("min-coverage-changed-files", 60);
+    map.set("baseline-paths", "");
+    return map.get(key);
   }
 
   beforeEach(() => {

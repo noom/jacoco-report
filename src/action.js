@@ -10,7 +10,6 @@ async function action() {
   try {
     const pathsString = core.getInput("paths");
     const reportPaths = pathsString.split(",");
-    const showPagesLinks = parseBooleans(core.getInput("show-pages-links"));
     const baselinePathsString = core.getInput("baseline-paths");
     const baselineReportPaths = baselinePathsString.split(",").filter(p => p.length > 0);
     const minCoverageOverall = parseFloat(
@@ -64,16 +63,15 @@ async function action() {
     var baselineData = null;
 
     if (prNumber != null) {
-    if (baselineReportPaths.length > 0) {
-      baselineData = await getCoverageInfo(baselineReportPaths, base, head, client, debugMode);
-      baselineData.overallCoverage = baselineData.overallCoverage.project;
-      baselineData.previewContext = {
-        prNumber: prNumber,
-        ownerName: github.context.repo.owner,
-        repoName: github.context.repo.repo,
-        showPagesLinks: showPagesLinks,
-      };
-    }
+      if (baselineReportPaths.length > 0) {
+        baselineData = await getCoverageInfo(baselineReportPaths, base, head, client, debugMode);
+        baselineData.overallCoverage = baselineData.overallCoverage.project;
+        baselineData.previewContext = {
+          prNumber: prNumber,
+          ownerName: github.context.repo.owner,
+          repoName: github.context.repo.repo,
+        };
+      }
       await addComment(
         prNumber,
         updateComment,
@@ -141,7 +139,7 @@ async function getChangedFiles(base, head, client) {
   response.data.files.forEach((file) => {
     var changedFile = {
       filePath: file.filename,
-      url: file.blob_url
+      url: file.blob_url,
     };
     changedFiles.push(changedFile);
   });

@@ -12372,7 +12372,6 @@ async function action() {
   try {
     const pathsString = core.getInput("paths");
     const reportPaths = pathsString.split(",");
-    const showPagesLinks = parseBooleans(core.getInput("show-pages-links"));
     const baselinePathsString = core.getInput("baseline-paths");
     const baselineReportPaths = baselinePathsString.split(",").filter(p => p.length > 0);
     const minCoverageOverall = parseFloat(
@@ -12426,16 +12425,15 @@ async function action() {
     var baselineData = null;
 
     if (prNumber != null) {
-    if (baselineReportPaths.length > 0) {
-      baselineData = await getCoverageInfo(baselineReportPaths, base, head, client, debugMode);
-      baselineData.overallCoverage = baselineData.overallCoverage.project;
-      baselineData.previewContext = {
-        prNumber: prNumber,
-        ownerName: github.context.repo.owner,
-        repoName: github.context.repo.repo,
-        showPagesLinks: showPagesLinks,
-      };
-    }
+      if (baselineReportPaths.length > 0) {
+        baselineData = await getCoverageInfo(baselineReportPaths, base, head, client, debugMode);
+        baselineData.overallCoverage = baselineData.overallCoverage.project;
+        baselineData.previewContext = {
+          prNumber: prNumber,
+          ownerName: github.context.repo.owner,
+          repoName: github.context.repo.repo,
+        };
+      }
       await addComment(
         prNumber,
         updateComment,
@@ -12503,7 +12501,7 @@ async function getChangedFiles(base, head, client) {
   response.data.files.forEach((file) => {
     var changedFile = {
       filePath: file.filename,
-      url: file.blob_url
+      url: file.blob_url,
     };
     changedFiles.push(changedFile);
   });
@@ -12674,11 +12672,11 @@ function getPRComment(
 ) {
   const fileTable = getFileTable(filesCoverage, minCoverageChangedFiles, baselineData);
   const heading = getTitle(title);
-  const description = getDescription(baselineData);
   if (baselineData == null) {
     const overallTable = getOverallTable(overallCoverage, minCoverageOverall);
-    return heading + description + fileTable + `\n\n` + overallTable;
+    return heading + fileTable + `\n\n` + overallTable;
   } 
+  const description = getDeltaDescription();
   const overallTable = getOverallTableWithDelta(overallCoverage, baselineData.overallCoverage);
   return heading + description + fileTable + `\n\n` + overallTable;
 }
@@ -12689,15 +12687,10 @@ function getFileTable(filesCoverage, minCoverage, baselineData) {
     return `> There is no coverage information present for the Files changed`;
   }
 
-  var tableHeader = getHeader(filesCoverage.percentage);
-  var tableStructure = `|:-|:-:|:-:|`;
+  var table = baselineData == null ?
+    getHeader(filesCoverage.percentage) :
+    getHeaderWithDelta(filesCoverage.percentage, baselineData.filesCoverage.percentage);
 
-  if (baselineData != null) {
-    tableHeader = getHeaderWithDelta(filesCoverage.percentage, baselineData.filesCoverage.percentage);
-    tableStructure += `:-:|`;
-  }
-
-  var table = tableHeader + `\n` + tableStructure;
   files.forEach((file) => {
     if (baselineData != null) {
       const previewUrl = formatPreviewUrl(file, baselineData.previewContext);
@@ -12725,17 +12718,21 @@ function getFileTable(filesCoverage, minCoverage, baselineData) {
 
   function getHeader(coverage) {
     var status = getStatus(coverage, minCoverage);
-    return `|File|Coverage [${formatCoverage(coverage)}]|${status}|`;
+    const structure = `|:-|:-:|:-:|`;
+    return `|File|Coverage [${formatCoverage(coverage)}]|${status}|\n${structure}`;
   }
 
   function getHeaderWithDelta(coverage, baselineCoverage) {
     var status = getDeltaStatus(baselineCoverage, coverage);
-    return `|File|Coverage [${formatCoverage(coverage)}]|Change [${formatCoverageDelta(baselineCoverage, coverage)}]|${status}|`;
+    const change = formatCoverageDelta(baselineCoverage, coverage);
+    const structure = `|:-|:-:|:-:|:-:|`;
+    return `|File|Coverage [${formatCoverage(coverage)}]|Change [${change}]|${status}|\n${structure}`;
   }
 
   function getRowWithDelta(name, coverage, baselineCoverage) {
     var status = getDeltaStatus(baselineCoverage, coverage);
-    return `|${name}|${formatCoverage(coverage)}|${formatCoverageDelta(baselineCoverage, coverage)}|${status}|`;
+    const change = formatCoverageDelta(baselineCoverage, coverage);
+    return `|${name}|${formatCoverage(coverage)}|${change}|${status}|`;
   }
 
   function getRow(name, coverage) {
@@ -12768,10 +12765,7 @@ function getOverallTable(coverage, minCoverage) {
   return tableHeader + `\n` + tableStructure;
 }
 
-function getDescription(baselineData) {
-  if (baselineData == null) {
-    return "";
-  }
+function getDeltaDescription() {
   return `Coverage change is reported relative to the default branch.\n`;
 }
 

@@ -22,10 +22,6 @@ inputs:
     description: "Update the coverage report comment instead of creating new ones. Requires title to works properly."
     required: false
     default: "false"
-  show-pages-links:
-    description: "Render links to gh-pages sites showing code coverage"
-    required: false
-    default: "false"
   baseline-paths:
     description: "Comma separated paths of the baseline generated jacoco xml files, used for coverage delta"
     required: false

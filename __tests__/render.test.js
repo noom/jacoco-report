@@ -59,10 +59,9 @@ describe("get PR Comment", function () {
       ],
       percentage: 63.64,
     };
-    const baselineData = null;
-
+    
     it("coverage greater than min coverage for overall project", function () {
-      const comment = render.getPRComment(49.23, files, 30, 60, baselineData);
+      const comment = render.getPRComment(49.23, files, 30, 60, null, null);
       expect(comment).toEqual(
         `|File|Coverage [63.64%]|:green_apple:|
 |:-|:-:|:-:|
@@ -75,7 +74,7 @@ describe("get PR Comment", function () {
     });
 
     it("coverage lesser than min coverage for overall project", function () {
-      const comment = render.getPRComment(49.23, files, 50, 64, baselineData);
+      const comment = render.getPRComment(49.23, files, 50, 64, null, null);
       expect(comment).toEqual(
         `|File|Coverage [63.64%]|:x:|
 |:-|:-:|:-:|
@@ -88,7 +87,7 @@ describe("get PR Comment", function () {
     });
 
     it("coverage greater than min coverage for changed files", function () {
-      const comment = render.getPRComment(49.23, files, 30, 80, baselineData);
+      const comment = render.getPRComment(49.23, files, 30, 80, null, null);
       expect(comment).toEqual(
         `|File|Coverage [63.64%]|:x:|
 |:-|:-:|:-:|
@@ -101,7 +100,7 @@ describe("get PR Comment", function () {
     });
 
     it("coverage lesser than min coverage for overall project", function () {
-      const comment = render.getPRComment(49.23, files, 50, 20, baselineData);
+      const comment = render.getPRComment(49.23, files, 50, 20, null, null);
       expect(comment).toEqual(
         `|File|Coverage [63.64%]|:green_apple:|
 |:-|:-:|:-:|
@@ -114,7 +113,7 @@ describe("get PR Comment", function () {
     });
 
     it("with title", function () {
-      const comment = render.getPRComment(49.23, files, 50, 20, "Coverage", baselineData);
+      const comment = render.getPRComment(49.23, files, 50, 20, "Coverage", null, null);
       expect(comment).toEqual(
         `### Coverage
 |File|Coverage [63.64%]|:green_apple:|
@@ -185,7 +184,6 @@ describe("get PR Comment", function () {
       ownerName: ownerName,
       prNumber: prNumber,
       repoName: repoName,
-      showPagesLinks: true,
       },
     };
     const title = "Titular Line";
